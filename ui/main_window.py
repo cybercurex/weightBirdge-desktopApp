@@ -45,19 +45,34 @@ class MainWindow(QMainWindow):
         self.logger.info(f"Updated settings for {service_name}")
 
     def setup_ui(self):
-        self.setWindowTitle("Weighbridge Control Panel")
-        self.setMinimumSize(900, 600)
+        self.setWindowTitle("WORWISE WEIGTHBRIDGE")
+        self.setMinimumSize(1000, 700)
+        self.setWindowFlags(self.windowFlags() | Qt.CustomizeWindowHint | Qt.WindowTitleHint | Qt.WindowStaysOnTopHint)
+        self.setWindowFlag(Qt.WindowMaximizeButtonHint, False)
+        self.setWindowFlag(Qt.WindowMinimizeButtonHint, False)
+        self.setFixedSize(1000, 700)
+        self.showMaximized()
 
         # Main widget and layout
         main_widget = QWidget()
         self.setCentralWidget(main_widget)
         layout = QVBoxLayout(main_widget)
-        layout.setContentsMargins(20, 20, 20, 20)
-        layout.setSpacing(20)
+        layout.setContentsMargins(30, 30, 30, 30)
+        layout.setSpacing(30)
 
-        # Header
-        header = QLabel("Weighbridge Control Panel")
-        header.setStyleSheet("font-size: 24px; font-weight: bold; color: #333;")
+        # Stunning Header
+        header = QLabel("WORWISE WEIGTHBRIDGE")
+        header.setAlignment(Qt.AlignCenter)
+        header.setStyleSheet("""
+            font-size: 38px;
+            font-weight: 900;
+            color: #2b5876;
+            letter-spacing: 2px;
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #43cea2, stop:1 #185a9d);
+            border-radius: 12px;
+            padding: 24px 0 24px 0;
+            margin-bottom: 10px;
+        """)
         layout.addWidget(header)
 
         # Services table
@@ -66,26 +81,32 @@ class MainWindow(QMainWindow):
 
         # Log panel
         log_label = QLabel("Activity Log")
-        log_label.setStyleSheet("font-weight: bold; color: #555;")
+        log_label.setStyleSheet("font-size: 18px; font-weight: bold; color: #185a9d; margin-top: 20px;")
         layout.addWidget(log_label)
 
         self.log_panel = LogPanel()
         layout.addWidget(self.log_panel, stretch=1)
 
-        # Apply window stylesheet
+        # Apply modern window stylesheet
         self.setStyleSheet("""
-            QMainWindow { background-color: #f5f5f5; }
+            QMainWindow { background-color: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #e0eafc, stop:1 #cfdef3); }
             QTableWidget {
-                background-color: white;
-                border: 1px solid #ddd;
-                border-radius: 6px;
-                gridline-color: #eee;
+                background-color: #ffffff;
+                border: 2px solid #43cea2;
+                border-radius: 10px;
+                gridline-color: #43cea2;
+                font-size: 16px;
             }
             QHeaderView::section {
-                background-color: #f8f9fa;
-                padding: 10px;
+                background-color: #43cea2;
+                color: #fff;
+                font-weight: bold;
+                padding: 12px;
                 border: none;
-                border-bottom: 2px solid #dee2e6;
+                border-bottom: 2px solid #185a9d;
+            }
+            QLabel {
+                font-family: 'Segoe UI', 'Arial', sans-serif;
             }
         """)
 
@@ -172,9 +193,36 @@ class MainWindow(QMainWindow):
         self.log_panel.append(f"[{level}] {message}")
 
     def start_service(self, row):
+        service_name = self.services_table.item(row, 0).text()
+        # Map service name to service_id
+        service_id = None
+        if service_name == "Serial Service":
+            service_id = "serial"
+        elif service_name == "API Service":
+            service_id = "api"
+        if service_id:
+            self.logger.info(f"Attempting to start {service_name}...")
+            try:
+                self.service_manager.start(service_id)
+                self.logger.info(f"{service_name} started.")
+            except Exception as e:
+                self.logger.error(f"Failed to start {service_name}: {str(e)}")
         self.update_service_status(row, True)
 
     def stop_service(self, row):
+        service_name = self.services_table.item(row, 0).text()
+        service_id = None
+        if service_name == "Serial Service":
+            service_id = "serial"
+        elif service_name == "API Service":
+            service_id = "api"
+        if service_id:
+            self.logger.info(f"Attempting to stop {service_name}...")
+            try:
+                self.service_manager.stop(service_id)
+                self.logger.info(f"{service_name} stopped.")
+            except Exception as e:
+                self.logger.error(f"Failed to stop {service_name}: {str(e)}")
         self.update_service_status(row, False)
 
     def update_service_status(self, row, is_running):

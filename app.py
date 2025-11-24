@@ -8,7 +8,11 @@ from ui.main_window import MainWindow
 class App:
     def __init__(self):
         self.config = Config()
-        self.db = Database(self.config.DB_FILE)
+        # Ensure DB_FILE is a valid SQLAlchemy URL
+        db_url = self.config.DB_FILE
+        if not db_url.startswith("sqlite://"):
+            db_url = f"sqlite:///{db_url}"
+        self.db = Database(db_url)
         self.logger = AppLogger(self.db)
         self.service_manager = ServiceManager(self.logger, self.db, self.config)
         self.main_window = MainWindow(self.service_manager, self.logger, self.config)
