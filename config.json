@@ -1,0 +1,6 @@
+{
+  "port": "1",
+  "baudrate": 9600,
+  "api_endpoint": "localhost://test/",
+  "auto_start": true
+}
